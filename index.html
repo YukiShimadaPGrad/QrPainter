@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, user-scalable=yes, initial-scale=1.0, maximum-scale=8.0, minimum-scale=0.25"
+          name="viewport">
+    <meta content="ie=edge" http-equiv="X-UA-Compatible">
+    <title>QRコードお絵描き</title>
+</head>
+
+<body>
+<h1>QRコードお絵描き</h1>
+<p>破れたり掠れたりしたQRコードを自力で描き直す道具</p>
+<form onsubmit="return false;">
+    <label for="id_qr_size">縦横マス数</label>
+    <input id="id_qr_size" name="qr_width" pattern="2[1-9]|[3-9][0-9]|[1-9][0-9][0-9]" required type="number">
+    <button onclick="onQrSizeChanged();" type="button">リセット</button>
+    <label for="id_qr_border">読み取り向け表示切り替え</label>
+    <input id="id_qr_border" name="qr_border" onclick="onQrBorderChanged(this);" type="checkbox">
+</form>
+<br>
+<div id="id_qr_outer">
+    <table id="id_qr"></table>
+</div>
+<label>スクショ用メモ
+    <textarea>タイトルとか</textarea>
+</label>
+</body>
+<script>
+    "use strict";
+
+    function isFindPatternCell(x, y, size) {
+        return (((x < 7 && y < 7) && !(1 <= x && x <= 5 && 1 <= y && y <= 5)) || (2 <= x && x <= 4 && 2 <= y && y <= 4))
+            || (((x < 7 && size - 7 <= y) && !(1 <= x && x <= 5 && size - 6 <= y && y <= size - 2)) || (2 <= x && x <= 4 && size - 5 <= y && y <= size - 3))
+            || (((size - 7 <= x && y < 7) && !(size - 6 <= x && x <= size - 2 && 1 <= y && y <= 5)) || (size - 5 <= x && x <= size - 3 && 2 <= y && y <= 4))
+    }
+
+    function makeQr(size) {
+        const clazz = "painted_cell";
+        const table = document.getElementById("id_qr");
+        table.innerHTML = "";
+        const onclick = (ev) => {
+            const elm = ev.target
+            if (elm.classList.contains(clazz)) {
+                elm.classList.remove(clazz);
+            } else {
+                elm.classList.add(clazz);
+            }
+        };
+        for (let y = 0; y < size; y++) {
+            const tr = document.createElement("tr");
+            for (let x = 0; x < size; x++) {
+                const td = document.createElement("td");
+                td.onclick = onclick;
+                if (isFindPatternCell(x, y, size)) {
+                    td.classList.add(clazz);
+                }
+                tr.appendChild(td);
+            }
+            table.appendChild(tr);
+        }
+    }
+
+    function onQrSizeChanged() {
+        const size = parseInt(document.getElementById("id_qr_size").value);
+        if (isNaN(size) || size < 21 || 1000 <= size) {
+            alert(`QRコードのサイズは21以上の2,3桁の正の整数にしてね`);
+            return;
+        }
+        makeQr(size);
+    }
+
+    function onQrBorderChanged(chkBox) {
+        const rootStyle = document.querySelector(":root").style;
+        rootStyle.setProperty("--qr-border-width", chkBox.checked ? "0px" : "1px");
+        rootStyle.setProperty("--qr-cell-size", chkBox.checked ? "2px" : "2rem");
+    }
+</script>
+<style>
+    :root {
+        --qr-border-width: 1px;
+        --qr-cell-size: 2rem;
+    }
+
+    /*#id_qr_outer {*/
+    /*    overflow-x: auto;*/
+    /*    white-space: nowrap;*/
+    /*}*/
+
+    #id_qr {
+        border-collapse: collapse;
+        margin: 5rem;
+    }
+
+    #id_qr > tr > td {
+        width: var(--qr-cell-size);
+        height: var(--qr-cell-size);
+        border: var(--qr-border-width) solid;
+        content: ' ';
+
+    }
+
+    .painted_cell {
+        background-color: black;
+    }
+</style>
+</html>
