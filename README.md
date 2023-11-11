@@ -2,6 +2,8 @@
 
 QRコード復元アプリ
 
+[ブラウザでアプリを開く](https://yukishimadapgrad.github.io/QrPainter/)
+
 ## Overview
 
 破れたり掠れたりしたQRコードを自力で描き直すためのアプリ
